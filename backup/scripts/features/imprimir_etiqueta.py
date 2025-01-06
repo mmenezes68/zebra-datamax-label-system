@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import chardet
 from fractions import Fraction
@@ -25,16 +26,16 @@ def configurar_midia():
     print("Escolha a unidade de medida:")
     print("1. Milímetros (mm)")
     print("2. Polegadas (in, aceita valores fracionários como '2 1/2')")
-    
+
     while True:
         escolha = input("Digite 1 ou 2: ").strip()
         if escolha not in ("1", "2"):
             print("Opção inválida. Escolha 1 ou 2.")
             continue
-        
+
         unidade = "mm" if escolha == "1" else "in"
         break
-    
+
     print(f"As medidas serão configuradas em {unidade}.")
     largura = input("Digite a largura da etiqueta: ").strip()
     altura = input("Digite a altura da etiqueta: ").strip()
@@ -65,7 +66,7 @@ def carregar_arquivo():
         if not caminho:
             print("Caminho não fornecido. Tente novamente.")
             continue
-        
+
         if not caminho.endswith(('.csv', '.xls', '.xlsx')):
             print("Erro: O arquivo deve ser CSV ou Excel.")
             continue
@@ -95,7 +96,7 @@ def selecionar_colunas(df):
         try:
             escolha = input("Digite os números correspondentes às colunas desejadas, separados por vírgulas: ").strip()
             indices = [int(num.strip()) - 1 for num in escolha.split(",")]
-            
+
             if all(0 <= idx < len(df.columns) for idx in indices):
                 return [df.columns[idx] for idx in indices]
             else:
@@ -104,30 +105,52 @@ def selecionar_colunas(df):
             print("Entrada inválida. Certifique-se de digitar números válidos separados por vírgulas.")
 
 
-def gerar_zpl(df, colunas, largura, altura, espaco, colunas_por_linha):
+def selecionar_etiquetas(df):
+    """Permite selecionar quais etiquetas imprimir."""
+    print("\nOpções de impressão:")
+    print("1. Imprimir todas as etiquetas.")
+    print("2. Imprimir um intervalo de etiquetas.")
+    print("3. Selecionar etiquetas específicas.")
+
+    escolha = input("Digite sua escolha (1, 2 ou 3): ").strip()
+    if escolha == "1":
+        return df
+    elif escolha == "2":
+        intervalo = input("Digite o intervalo (ex.: 1-5): ").strip()
+        try:
+            inicio, fim = map(int, intervalo.split("-"))
+            return df.iloc[inicio - 1:fim]
+        except ValueError:
+            print("Intervalo inválido. Imprimindo todas as etiquetas.")
+            return df
+    elif escolha == "3":
+        indices = input("Digite os números das etiquetas separadas por vírgulas: ").strip()
+        try:
+            indices = [int(i.strip()) - 1 for i in indices.split(",")]
+            return df.iloc[indices]
+        except ValueError:
+            print("Seleção inválida. Imprimindo todas as etiquetas.")
+            return df
+    else:
+        print("Opção inválida. Retornando todas as etiquetas.")
+        return df
+
+
+def gerar_zpl(df, colunas, largura, altura, espaco, colunas_por_linha, copias=1):
     """Gera o código ZPL para as etiquetas."""
-    arquivos = []
     x_inicial = 50
     y_inicial = 50
     y_atual = y_inicial
     x_atual = x_inicial
-
     contador_coluna = 0
 
-    for idx, row in df.iterrows():
-        conteudo_etiqueta = " - ".join(str(row[coluna]) for coluna in colunas)  # Combina os campos selecionados
-        nome_base = str(row[colunas[0]])  # Usa apenas o primeiro campo para o nome do arquivo
-        nome_arquivo = f"etiqueta_{idx + 1}_{nome_base.replace(' ', '_').replace('/', '_')[:20]}.zpl"
+    zpl_code = "^XA\n"
 
-        zpl = "^XA\n"
-        zpl += f"^FO{x_atual},{y_atual}^ADN,36,20^FD{conteudo_etiqueta}^FS\n"
-        zpl += "^XZ\n"
-        
-        with open(f"/Applications/MAMP/htdocs/ZPL_estudos/etiquetas/{nome_arquivo}", "w") as f:
-            f.write(zpl)
-        
-        arquivos.append(nome_arquivo)
-        
+    for idx, row in df.iterrows():
+        conteudo_etiqueta = " - ".join(str(row[coluna]) for coluna in colunas)
+        for _ in range(copias):  # Repetir para o número de cópias
+            zpl_code += f"^FO{x_atual},{y_atual}^ADN,36,20^FD{conteudo_etiqueta}^FS\n"
+
         contador_coluna += 1
         if contador_coluna < colunas_por_linha:
             x_atual += largura + espaco
@@ -136,19 +159,24 @@ def gerar_zpl(df, colunas, largura, altura, espaco, colunas_por_linha):
             x_atual = x_inicial
             y_atual += altura + espaco
 
-    return arquivos
+    zpl_code += "^XZ"
+    return zpl_code
 
 
 def main():
     largura, altura, espaco, colunas_por_linha = configurar_midia()
     df = carregar_arquivo()
-    colunas = selecionar_colunas(df)  # Múltiplas colunas
-    print(f"Colunas selecionadas: {colunas}")
+    colunas = selecionar_colunas(df)
+    df_selecionado = selecionar_etiquetas(df)
+    copias = int(input("Digite o número de cópias para cada etiqueta: ").strip())
 
-    arquivos_gerados = gerar_zpl(df, colunas, largura, altura, espaco, colunas_por_linha)
-    print("Arquivos ZPL gerados com sucesso:")
-    for arquivo in arquivos_gerados:
-        print(arquivo)
+    zpl_code = gerar_zpl(df_selecionado, colunas, largura, altura, espaco, colunas_por_linha, copias)
+    print("\nZPL gerado:")
+    print(zpl_code)
+
+    with open("etiquetas.zpl", "w") as f:
+        f.write(zpl_code)
+    print("\nCódigo ZPL salvo em etiquetas.zpl.")
 
 
 if __name__ == "__main__":

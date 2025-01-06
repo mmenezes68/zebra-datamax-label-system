@@ -1,0 +1,22 @@
+^XA
+^PW850             // Largura total da área de impressão (3 etiquetas de 264 dots cada + espaçamento)
+^LL176             // Altura de cada etiqueta (176 dots)
+
+; Primeira etiqueta
+^FO33,30           // Posição inicial: 33 dots da margem esquerda, 30 dots do topo
+^FB224,5,L,10,0    // Bloco de texto: largura de 224 dots, até 5 linhas, alinhado à esquerda, 10 dots de espaçamento
+^ADN,30,20         // Fonte padrão com altura e largura ajustadas
+^FDMarcos A Menezes^FS  // Conteúdo da etiqueta
+
+; Segunda etiqueta
+^FO320,30          // Posição inicial: 320 dots da margem esquerda (264 dots + 23 dots de espaçamento)
+^FB224,5,L,10,0    // Configuração semelhante à primeira etiqueta
+^ADN,30,20         // Fonte padrão
+^FDMarcos A Menezes^FS  // Conteúdo da etiqueta
+
+; Terceira etiqueta
+^FO610,30          // Posição inicial: 610 dots da margem esquerda (264 dots + 264 dots + 23 dots de espaçamento)
+^FB224,5,L,10,0    // Configuração semelhante
+^ADN,30,20         // Fonte padrão
+^FDMarcos A Menezes^FS  // Conteúdo da etiqueta
+^XZ

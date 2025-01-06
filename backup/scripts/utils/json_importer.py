@@ -1,7 +1,7 @@
 import json
 
 # Caminho para o arquivo JSON
-caminho_json = "/Applications/MAMP/htdocs/ZPL_estudos/etiquetas_config.json"
+caminho_json = "/Applications/MAMP/htdocs/ZPL_estudos/config/etiquetas_config.json"
 
 # Carregar o arquivo de configuração
 with open(caminho_json, "r") as file:
