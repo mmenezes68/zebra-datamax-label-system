@@ -1,0 +1,34 @@
+{
+    "Etiqueta_33x22mm": {
+        "largura": 224,
+        "altura": 176,
+        "espaco": 23,
+        "colunas": 3,
+        "largura_total": 850,
+        "posicoes_horizontais": [33, 320, 610]
+    },
+    "Etiqueta_50x30mm": {
+        "largura": 288,
+        "altura": 216,
+        "espaco": 30,
+        "colunas": 2,
+        "largura_total": 636,
+        "posicoes_horizontais": [33, 366]
+    },
+    "Etiqueta_70x50mm": {
+        "largura": 504,
+        "altura": 360,
+        "espaco": 50,
+        "colunas": 1,
+        "largura_total": 504,
+        "posicoes_horizontais": [33]
+    },
+    "Etiqueta_4x6_in": {
+        "largura": 576,
+        "altura": 864,
+        "espaco": 10,
+        "colunas": 1,
+        "largura_total": 576,
+        "posicoes_horizontais": [33]
+    }
+}
